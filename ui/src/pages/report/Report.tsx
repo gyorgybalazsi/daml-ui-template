@@ -11,12 +11,17 @@ import { ContractId } from "@daml/types";
 import { Appraise, Asset, Give  } from "@daml.js/daml-ui-template-0.0.1/lib/Main";
 import { InputDialog, InputDialogProps } from "./InputDialog";
 import useStyles from "./styles";
+import { useKnownParties } from '../../UseKnownParties'; // BGY
+
+
 
 export default function Report() {
   const classes = useStyles();
   const party = useParty();
   const ledger : Ledger = useLedger();
   const assets = useStreamQuery(Asset).contracts;
+
+  const {displayName, partyIdentifier, knownPartyDisplayNames} = useKnownParties () // BGY
 
   const defaultGiveProps : InputDialogProps<Give> = {
     open: false,
@@ -26,7 +31,7 @@ export default function Report() {
       newOwner : {
         label: "New Owner",
         type: "selection",
-        items: [ "Alice", "Bob" ] } },
+        items: knownPartyDisplayNames  } }, // BGY items: [ "Alice", "Bob" ] } },
     onClose: async function() {}
   };
 
@@ -37,7 +42,7 @@ export default function Report() {
       setGiveProps({ ...defaultGiveProps, open: false});
       // if you want to use the contracts payload
       if (!state || asset.payload.owner === state.newOwner) return;
-      await ledger.exercise(Asset.Give, asset.contractId, state);
+      await ledger.exercise(Asset.Give, asset.contractId, {...state, newOwner : partyIdentifier(state.newOwner)}); // BGY await ledger.exercise(Asset.Give, asset.contractId, state);
     };
     setGiveProps({ ...defaultGiveProps, open: true, onClose})
   };
@@ -133,8 +138,8 @@ export default function Report() {
         <TableBody>
           {assets.map(a => (
             <TableRow key={a.contractId} className={classes.tableRow}>
-              <TableCell key={0} className={classes.tableCell}>{a.payload.issuer}</TableCell>
-              <TableCell key={1} className={classes.tableCell}>{a.payload.owner}</TableCell>
+              <TableCell key={0} className={classes.tableCell}>{displayName(a.payload.issuer)}</TableCell> {/*BGY {a.payload.issuer}</TableCell>*/}
+              <TableCell key={1} className={classes.tableCell}>{displayName(a.payload.owner)}</TableCell> {/*BGY {a.payload.owner}</TableCell>*/}
               <TableCell key={2} className={classes.tableCell}>{a.payload.name}</TableCell>
               <TableCell key={3} className={classes.tableCell}>{a.payload.value}</TableCell>
               <TableCell key={4} className={classes.tableCell}>{a.payload.dateOfAppraisal}</TableCell>

@@ -1,7 +1,7 @@
 build:
 	daml build
 	daml codegen js -o daml.js .daml/dist/*.dar
-	cd ui && yarn install --force --frozen-lockfile
+	cd ui && yarn install
 	cd ui && yarn build
 	
 deploy: build
